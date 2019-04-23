@@ -1,0 +1,10 @@
+#btnSend {
+    -fx-font: 16px "Serif";
+    -fx-padding: 2px;
+    -fx-background-color: blueviolet;
+    -fx-text-fill: white;
+}
+#btnSend:hover{
+     -fx-background-color: red;
+     -fx-text-fill: black;
+}
