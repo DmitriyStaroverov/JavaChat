@@ -18,4 +18,8 @@ public class Controller {
         textField.requestFocus ();
     }
 
+    public void closeApp(){
+        System.exit ( 0 );
+    }
+
 }
