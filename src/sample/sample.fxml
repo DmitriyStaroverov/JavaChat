@@ -4,36 +4,46 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?scenebuilder-stylesheet /css/styles.css?>
 
-<VBox alignment="center" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
-   <MenuBar>
-     <menus>
-       <Menu mnemonicParsing="false" text="File">
-         <items>
-           <MenuItem mnemonicParsing="false" text="Close" onAction="#closeApp"/>
-         </items>
-       </Menu>
-       <Menu mnemonicParsing="false" text="Edit">
-         <items>
-           <MenuItem mnemonicParsing="false" text="Delete" />
-         </items>
-       </Menu>
-       <Menu mnemonicParsing="false" text="Help">
-         <items>
-           <MenuItem mnemonicParsing="false" text="About" />
-         </items>
-       </Menu>
-     </menus>
-   </MenuBar>
-    <TextArea fx:id="textArea" editable="false" focusTraversable="false" VBox.vgrow="ALWAYS" />
-    <HBox>
+<VBox alignment="center" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/8.0.172-ea"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+    <MenuBar fx:id="menuBar">
+        <Menu mnemonicParsing="false" text="File">
+            <items>
+                <MenuItem mnemonicParsing="false" onAction="#menuProfile" text="Profile"/>
 
-        <TextField fx:id="textField" onAction="#sendMsg" promptText="Введите сообщение" HBox.hgrow="ALWAYS" />
-        <Button fx:id="btnSend" onAction="#sendMsg" text="Send" />
+                <MenuItem mnemonicParsing="false" onAction="#menuClear" text="Clear">
+                    <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="C" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" onAction="#menuCloseApp" text="Exit">
+                    <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="Q" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+            </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <items>
+                <MenuItem mnemonicParsing="false" text="Help" onAction="#menuHelp"/>
+
+            </items>
+        </Menu>
+    </MenuBar>
+    <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+    <HBox>
+        <TextField fx:id="textField" focusTraversable="true" onAction="#sendMsg" promptText="Введите сообщение"
+                   HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)"/>
+        <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send"/>
     </HBox>
 </VBox>
