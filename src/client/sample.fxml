@@ -13,7 +13,7 @@
 <?scenebuilder-stylesheet /css/styles.css?>
 
 <VBox alignment="center" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/8.0.172-ea"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
     <MenuBar fx:id="menuBar">
         <Menu mnemonicParsing="false" text="File">
             <items>
