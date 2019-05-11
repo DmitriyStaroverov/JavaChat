@@ -1,14 +1,19 @@
 package client;
 
+import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Optional;
+
 import static javafx.application.Platform.exit;
 
 public class Controller {
@@ -19,37 +24,82 @@ public class Controller {
     @FXML
     TextField textField;
 
-    private String nickName = "user1";
+    @FXML
+    HBox upperPanel;
+
+    @FXML
+    HBox bottomPanel;
+
+    @FXML
+    TextField loginField;
+
+    @FXML
+    PasswordField passwordField;
+
+    private boolean isAuthorized;
+
+    private String nickName;
+
+    final String IP_ADRESS = "127.0.0.1";
+
+    final int PORT = 8189;
+
+    Socket socket;
+
+    DataInputStream in;
+
+    DataOutputStream out;
+
+    public void setAuthorized(boolean isAuthorized){
+        this.isAuthorized = isAuthorized;
+        if (!isAuthorized){
+            upperPanel.setVisible ( true );
+            upperPanel.setManaged ( true );
+            bottomPanel.setVisible ( false );
+            bottomPanel.setManaged ( false );
+
+        } else {
+            upperPanel.setVisible ( false );
+            upperPanel.setManaged ( false );
+            bottomPanel.setVisible ( true );
+            bottomPanel.setManaged ( true );
+        }
+    }
 
     public void sendMsg() {
-        Date date = new Date ();
-        SimpleDateFormat timeFormat = new SimpleDateFormat ("[H:mm:ss]");
-        textArea.appendText(timeFormat.format(date) + " " + nickName + ": " + textField.getText() + "\n");
-        textField.clear ();
-        textField.requestFocus ();
+        try {
+            out.writeUTF ( textField.getText () );
+            textField.clear ();
+            textField.requestFocus ();
+        } catch (IOException e) {
+            e.printStackTrace ();
+        }
     }
 
     public void menuProfile(ActionEvent actionEvent) {
         Dialog dialogProfile = new Dialog ();
         dialogProfile.setTitle ( "User profile" );
-        dialogProfile.setHeaderText("Profile settings");
+        dialogProfile.setHeaderText ( "Profile settings" );
         ButtonType btnSaveProfile = new ButtonType ( "OK", ButtonBar.ButtonData.OK_DONE );
-        dialogProfile.getDialogPane ().getButtonTypes ().addAll (btnSaveProfile, ButtonType.CANCEL  );
+        dialogProfile.getDialogPane ().getButtonTypes ().addAll ( btnSaveProfile, ButtonType.CANCEL );
         //
         GridPane gridPane = new GridPane ();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        gridPane.setPadding(new Insets (20, 150, 10, 10));
-        gridPane.add(new Label("Username"), 0, 0);
+        gridPane.setHgap ( 10 );
+        gridPane.setVgap ( 10 );
+        gridPane.setPadding ( new Insets ( 20, 150, 10, 10 ) );
+        gridPane.add ( new Label ( "Username" ), 0, 0 );
         //
         TextField tfNickName = new TextField ( this.nickName );
-        gridPane.add(tfNickName, 1, 0);
+        tfNickName.setText ( nickName );
+        tfNickName.setEditable ( false );
+
+        gridPane.add ( tfNickName, 1, 0 );
         //
         dialogProfile.getDialogPane ().setContent ( gridPane );
         //
-        Optional<ButtonType> result = dialogProfile.showAndWait();
-        if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-            nickName = tfNickName.getText ();
+        Optional<ButtonType> result = dialogProfile.showAndWait ();
+        if (result.isPresent () && result.get ().getButtonData () == ButtonBar.ButtonData.OK_DONE) {
+            //nickName = tfNickName.getText ();
         }
     }
 
@@ -64,22 +114,84 @@ public class Controller {
         }
     }
 
+
+
+    public void connect() {
+        try {
+            socket = new Socket ( IP_ADRESS, PORT );
+            in = new DataInputStream ( socket.getInputStream () );
+            out = new DataOutputStream ( socket.getOutputStream () );
+            setAuthorized ( false );
+            Thread thread = new Thread ( new Runnable () {
+                @Override
+                public void run() {
+                    try {
+                        while (true){
+                            String str = in.readUTF ();
+                            if (str.indexOf ( "/authok" )> -1){
+                                String[] tokens = str.split ( " " );
+                                nickName = tokens[1];
+                                setAuthorized ( true );
+                                break;
+                            } else {
+                                textArea.appendText ( str + "\n");
+                            }
+
+                        }
+                        while (true) {
+                            String str = in.readUTF ();
+                            if (str.indexOf ( "/serverClosed" ) > -1) break;
+                            textArea.appendText ( str + "\n" );
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace ();
+                    } finally {
+                        try {
+                            socket.close ();
+                        } catch (IOException e) {
+                            e.printStackTrace ();
+                        }
+                        setAuthorized ( false );
+                    }
+                }
+            } );
+            thread.setDaemon ( true );
+            thread.start ();
+
+        } catch (IOException e) {
+            e.printStackTrace ();
+        }
+    }
+
     public void menuCloseApp() {
-       exit ();
+        exit ();
     }
 
     public void menuHelp(ActionEvent actionEvent) {
-        Alert alertHelp = new Alert(Alert.AlertType.INFORMATION);
-        alertHelp.setTitle("Help");
-        alertHelp.setHeaderText(null);
-        alertHelp.setContentText("Ничем не могу помочь");
-        alertHelp.showAndWait();
+        Alert alertHelp = new Alert ( Alert.AlertType.INFORMATION );
+        alertHelp.setTitle ( "Help" );
+        alertHelp.setHeaderText ( null );
+        alertHelp.setContentText ( "Ничем не могу помочь" );
+        alertHelp.showAndWait ();
     }
-
 
 
     public void toSmile(ActionEvent actionEvent) {
         textField.appendText ( ":)" );
+    }
+
+    public void tryToAuth(ActionEvent actionEvent) {
+        if (socket == null || socket.isClosed ()){
+            connect ();
+        }
+        try {
+            out.writeUTF ( "/auth " + loginField.getText () + " " + passwordField.getText () );
+            loginField.clear ();
+            passwordField.clear ();
+        } catch (IOException e) {
+            e.printStackTrace ();
+        }
+
     }
 }
 

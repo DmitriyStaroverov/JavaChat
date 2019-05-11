@@ -1,30 +1,33 @@
 package server;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.Vector;
 
 public class ServerMain {
-    public static void main(String[] args) {
+
+    private Vector<ClientHandler> clientHandlers;
+
+    public ServerMain() throws SQLException {
+        clientHandlers = new Vector<> ();
         ServerSocket server = null;
         Socket socket = null;
         try {
+            AuthService.connect ();
             server = new ServerSocket ( 8189 );
-            System.out.println ("Сервер запущен");
-            socket = server.accept ();
-            System.out.println ("Клиент подключился");
-
-            Scanner in = new Scanner ( socket.getInputStream () );
-            PrintWriter out = new PrintWriter ( socket.getOutputStream (), true );
-
-
-            while (true){
-                String str = in.nextLine ();
-                if (str.equals ( "/end" )) break;
-                out.println ( "echo :"  + str );
-                System.out.println ("Client: " + str);
+            System.out.println ( "Сервер запущен, ожидаем клиентов" );
+            while (true) {
+                socket = server.accept ();
+                ClientHandler clientHandler = new ClientHandler ( this, socket );
+                Thread threadClient = new Thread ( clientHandler );
+                threadClient.setDaemon ( true );
+                threadClient.start ();
             }
         } catch (IOException e) {
             e.printStackTrace ();
@@ -39,8 +42,24 @@ public class ServerMain {
             } catch (IOException e) {
                 e.printStackTrace ();
             }
+            AuthService.disconnect ();
         }
+    }
 
+    public void subscribe(ClientHandler clientHandler){
+        clientHandlers.add ( clientHandler );
+        System.out.println ( "Клиент подключился" );
+    }
 
+    public void unsubscribe(ClientHandler clientHandler){
+        clientHandlers.remove ( clientHandler );
+        System.out.println ( "Клиент отключился, поток: " + Thread.currentThread ().getName () );
+    }
+
+    public void broadcastMsg(String strMsg) {
+        for (ClientHandler client :
+                clientHandlers) {
+            client.sendMsg ( strMsg );
+        }
     }
 }
