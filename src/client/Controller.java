@@ -1,12 +1,12 @@
 package client;
 
-import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -58,7 +58,7 @@ public class Controller {
             bottomPanel.setVisible ( false );
             bottomPanel.setManaged ( false );
 
-        } else {
+         } else {
             upperPanel.setVisible ( false );
             upperPanel.setManaged ( false );
             bottomPanel.setVisible ( true );

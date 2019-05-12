@@ -17,7 +17,7 @@ public class ClientHandler implements Runnable {
 
     private DataOutputStream out;
 
-    private String nick;
+    String nick;
 
     public ClientHandler(ServerMain serverMain, Socket socket) throws IOException {
         this.serverMain = serverMain;
@@ -28,28 +28,49 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
+
         try {
             while (true) {
                 String str = in.readUTF ();
-                if (str.startsWith ( "/auth" )){
+                if (str.startsWith ( "/auth" )) {
                     String[] tokens = str.split ( " " );
                     String newNick = AuthService.getNickByLoginAndPass ( tokens[1], tokens[2] );
-                    if (newNick != null){
-                        sendMsg ( "/authok " + newNick );
-                        this.nick = newNick;
-                        serverMain.subscribe ( this );
-                        break;
+                    if (newNick != null) {
+                        if (serverMain.getClientHandler ( newNick ) == null) {
+                            sendMsg ( "/authok " + newNick );
+                            this.nick = newNick;
+                            serverMain.subscribe ( this );
+                            break;
+                        } else {
+                            sendMsg ( "Пользователь " + newNick + " уже подключен!" );
+                        }
                     } else {
                         sendMsg ( "Неверный логин/пароль" );
                     }
                 }
             }
             SimpleDateFormat timeFormat = new SimpleDateFormat ( "[H:mm:ss]" );
-            while (true){
+            while (true) {
                 String str = in.readUTF ();
                 if (str.indexOf ( "/end" ) > -1) {
                     out.writeUTF ( "/serverClosed" );
                     break;
+                }
+                // TODO отправка личных сообщений
+                if (str.indexOf ( "/w " ) > -1) {
+                    String[] tokens = str.split ( " ", 3 );
+                    if (tokens[1] == null) {
+                        sendMsg ( "Ошибка личного личного сообщения" );
+                        continue;
+                    }
+                    ClientHandler clientToPrivatMsg = serverMain.getClientHandler ( tokens[1] );
+                    if (clientToPrivatMsg != null) {
+                        clientToPrivatMsg.sendMsg ( timeFormat.format ( new Date () ) + " " + nick + "(privat): " + tokens[2] );
+                        sendMsg ( timeFormat.format ( new Date () ) + " " + nick + "(privat): " + tokens[2] );
+                    } else {
+                        sendMsg ( "Пользователь с ником " + tokens[1] + " не подключен" );
+                    }
+                    continue;
                 }
                 serverMain.broadcastMsg ( timeFormat.format ( new Date () ) + " " + nick + ": " + str );
                 System.out.println ( "Поток: " + Thread.currentThread ().getName () + "; строка: " + str );
@@ -74,7 +95,7 @@ public class ClientHandler implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace ();
             }
-            serverMain.unsubscribe (  this );
+            serverMain.unsubscribe ( this );
 
         }
 

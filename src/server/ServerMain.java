@@ -46,14 +46,24 @@ public class ServerMain {
         }
     }
 
-    public void subscribe(ClientHandler clientHandler){
+    public void subscribe(ClientHandler clientHandler) {
         clientHandlers.add ( clientHandler );
-        System.out.println ( "Клиент подключился" );
+        System.out.println ( "Клиент: " + clientHandler.nick + " подключился" );
     }
 
-    public void unsubscribe(ClientHandler clientHandler){
+    public ClientHandler getClientHandler(String nickName){
+        for (ClientHandler client :
+                clientHandlers) {
+            if (client.nick.equals ( nickName )){
+                return client;
+            }
+        }
+        return null;
+    }
+
+    public void unsubscribe(ClientHandler clientHandler) {
         clientHandlers.remove ( clientHandler );
-        System.out.println ( "Клиент отключился, поток: " + Thread.currentThread ().getName () );
+        System.out.println ( "Клиент: " + clientHandler.nick + " отключился" );
     }
 
     public void broadcastMsg(String strMsg) {
