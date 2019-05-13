@@ -10,11 +10,16 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         FXMLLoader loader = new FXMLLoader ( getClass ().getResource ( "sample.fxml" ) );
         Parent root = loader.load ();
-        primaryStage.setTitle("Java Chat");
+        // передача сслыки на сцену в контроллер
+        Controller controller = loader.getController ();
+        controller.setStage ( primaryStage );
+        //
+        primaryStage.setTitle("Java Chat :");
         primaryStage.getIcons ().add(new Image ( "file:src/img/hashtag.png" )) ;
         primaryStage.setScene(new Scene(root, 400, 400));
         primaryStage.show();

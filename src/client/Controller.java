@@ -1,5 +1,6 @@
 package client;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -44,26 +45,35 @@ public class Controller {
 
     final int PORT = 8189;
 
+    private Stage stage;
+
     Socket socket;
 
     DataInputStream in;
 
     DataOutputStream out;
 
+    void setStage (Stage stage){
+        this.stage = stage;
+    }
+
     public void setAuthorized(boolean isAuthorized){
         this.isAuthorized = isAuthorized;
-        if (!isAuthorized){
-            upperPanel.setVisible ( true );
-            upperPanel.setManaged ( true );
-            bottomPanel.setVisible ( false );
-            bottomPanel.setManaged ( false );
-
-         } else {
-            upperPanel.setVisible ( false );
-            upperPanel.setManaged ( false );
-            bottomPanel.setVisible ( true );
-            bottomPanel.setManaged ( true );
-        }
+        Platform.runLater(() -> {
+            if (!isAuthorized){
+                upperPanel.setVisible ( true );
+                upperPanel.setManaged ( true );
+                bottomPanel.setVisible ( false );
+                bottomPanel.setManaged ( false );
+                stage.setTitle ( "Java Chat :" );
+            } else {
+                upperPanel.setVisible ( false );
+                upperPanel.setManaged ( false );
+                bottomPanel.setVisible ( true );
+                bottomPanel.setManaged ( true );
+                stage.setTitle ( "Java Chat : " + nickName );
+            }
+        });
     }
 
     public void sendMsg() {
@@ -171,7 +181,7 @@ public class Controller {
         Alert alertHelp = new Alert ( Alert.AlertType.INFORMATION );
         alertHelp.setTitle ( "Help" );
         alertHelp.setHeaderText ( null );
-        alertHelp.setContentText ( "Ничем не могу помочь" );
+        alertHelp.setContentText ( "????????" );
         alertHelp.showAndWait ();
     }
 
