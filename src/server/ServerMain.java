@@ -48,13 +48,13 @@ public class ServerMain {
 
     public void subscribe(ClientHandler clientHandler) {
         clientHandlers.add ( clientHandler );
-        System.out.println ( "Клиент: " + clientHandler.nick + " подключился" );
+        System.out.println ( "Клиент: " + clientHandler.getNick () + " подключился" );
     }
 
-    public ClientHandler getClientHandler(String nickName){
+    public ClientHandler getClientHandler(String nickName) {
         for (ClientHandler client :
                 clientHandlers) {
-            if (client.nick.equals ( nickName )){
+            if (client.getNick ().equals ( nickName )) {
                 return client;
             }
         }
@@ -63,13 +63,15 @@ public class ServerMain {
 
     public void unsubscribe(ClientHandler clientHandler) {
         clientHandlers.remove ( clientHandler );
-        System.out.println ( "Клиент: " + clientHandler.nick + " отключился" );
+        System.out.println ( "Клиент: " + clientHandler.getNick () + " отключился" );
     }
 
-    public void broadcastMsg(String strMsg) {
+    public void broadcastMsg(ClientHandler from, String strMsg) {
         for (ClientHandler client :
                 clientHandlers) {
-            client.sendMsg ( strMsg );
+            if (!client.checkBlackList ( from.getNick () )) {
+                client.sendMsg ( strMsg );
+            }
         }
     }
 }

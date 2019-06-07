@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class ClientHandler implements Runnable {
@@ -17,13 +18,20 @@ public class ClientHandler implements Runnable {
 
     private DataOutputStream out;
 
-    String nick;
+    private ArrayList<String> blacklist;
+
+    private String nick;
+
+    public String getNick() {
+        return nick;
+    }
 
     public ClientHandler(ServerMain serverMain, Socket socket) throws IOException {
         this.serverMain = serverMain;
         this.socket = socket;
         this.in = new DataInputStream ( socket.getInputStream () );
         this.out = new DataOutputStream ( socket.getOutputStream () );
+        this.blacklist = new ArrayList<> ();
     }
 
     @Override
@@ -52,28 +60,40 @@ public class ClientHandler implements Runnable {
             SimpleDateFormat timeFormat = new SimpleDateFormat ( "[H:mm:ss]" );
             while (true) {
                 String str = in.readUTF ();
-                if (str.indexOf ( "/end" ) > -1) {
-                    out.writeUTF ( "/serverClosed" );
-                    break;
-                }
-                // TODO отправка личных сообщений
-                if (str.indexOf ( "/w " ) > -1) {
-                    String[] tokens = str.split ( " ", 3 );
-                    if (tokens[1] == null) {
-                        sendMsg ( "Ошибка личного личного сообщения" );
-                        continue;
+                // блок служебных сообщений
+                if (str.indexOf ( "/" ) > -1) {
+                    if (str.indexOf ( "/end" ) > -1) {
+                        out.writeUTF ( "/serverClosed" );
+                        break;
                     }
-                    ClientHandler clientToPrivatMsg = serverMain.getClientHandler ( tokens[1] );
-                    if (clientToPrivatMsg != null) {
-                        clientToPrivatMsg.sendMsg ( timeFormat.format ( new Date () ) + " " + nick + "(privat): " + tokens[2] );
-                        sendMsg ( timeFormat.format ( new Date () ) + " " + nick + "(privat): " + tokens[2] );
-                    } else {
-                        sendMsg ( "Пользователь с ником " + tokens[1] + " не подключен" );
+                    if (str.indexOf ( "/blacklist" ) > -1) {
+                        String[] tokens = str.split ( " " );
+                        if (serverMain.getClientHandler ( tokens[1] ) != null) {
+                            blacklist.add ( tokens[1] );
+                            sendMsg ( "Вы добавили пользователя " + tokens[1] + " в черный список!" );
+                        } else {
+                            sendMsg ( "Пользователь " + tokens[1] + " не подключен" );
+                        }
                     }
-                    continue;
+                    //отправка личных сообщений
+                    if (str.indexOf ( "/w " ) > -1) {
+                        String[] tokens = str.split ( " ", 3 );
+                        if (tokens.length < 3) {
+                            sendMsg ( "Ошибка личного личного сообщения" );
+                            continue;
+                        }
+                        ClientHandler clientToPrivatMsg = serverMain.getClientHandler ( tokens[1] );
+                        if (clientToPrivatMsg != null) {
+                            clientToPrivatMsg.sendMsg ( timeFormat.format ( new Date () ) + " " + getNick () + "(privat): " + tokens[2] );
+                            sendMsg ( timeFormat.format ( new Date () ) + " " + getNick () + "(privat): " + tokens[2] );
+                        } else {
+                            sendMsg ( "Пользователь с ником " + tokens[1] + " не подключен" );
+                        }
+                    }
+                } else {
+                    serverMain.broadcastMsg ( this, timeFormat.format ( new Date () ) + " " + getNick () + ": " + str );
+                    System.out.println ( "Поток: " + Thread.currentThread ().getName () + "; строка: " + str );
                 }
-                serverMain.broadcastMsg ( timeFormat.format ( new Date () ) + " " + nick + ": " + str );
-                System.out.println ( "Поток: " + Thread.currentThread ().getName () + "; строка: " + str );
             }
 
         } catch (IOException e) {
@@ -99,6 +119,10 @@ public class ClientHandler implements Runnable {
 
         }
 
+    }
+
+    public boolean checkBlackList(String nick) {
+        return blacklist.contains ( nick );
     }
 
     public void sendMsg(String strMsg) {
