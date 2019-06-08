@@ -13,6 +13,7 @@
 <?scenebuilder-stylesheet /css/styles.css?>
 
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ListView?>
 <VBox alignment="center" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/8.0.172-ea"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
     <MenuBar fx:id="menuBar">
@@ -45,11 +46,17 @@
         <PasswordField promptText="пароль" fx:id="passwordField" onAction="#tryToAuth"/>
         <Button text="Авторизоваться" onAction="#tryToAuth"/>
     </HBox>
-    <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
-    <HBox fx:id="bottomPanel" managed="false" visible="false">
-        <TextField fx:id="textField" focusTraversable="true" onAction="#sendMsg" promptText="Введите сообщение"
-                   HBox.hgrow="ALWAYS"/>
-        <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)"/>
-        <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send"/>
+    <HBox VBox.vgrow="ALWAYS">
+       <VBox HBox.hgrow="ALWAYS">
+           <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+           <HBox fx:id="bottomPanel" managed="false" visible="false">
+               <TextField fx:id="textField" focusTraversable="true" onAction="#sendMsg" promptText="Введите сообщение"
+                          HBox.hgrow="ALWAYS"/>
+               <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)"/>
+               <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send"/>
+           </HBox>
+       </VBox>
+       <ListView fx:id="clientList" managed="true" visible="true"/>
     </HBox>
+
 </VBox>

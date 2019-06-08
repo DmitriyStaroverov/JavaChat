@@ -48,6 +48,7 @@ public class ServerMain {
 
     public void subscribe(ClientHandler clientHandler) {
         clientHandlers.add ( clientHandler );
+        broadcastClientList ();
         System.out.println ( "Клиент: " + clientHandler.getNick () + " подключился" );
     }
 
@@ -63,6 +64,7 @@ public class ServerMain {
 
     public void unsubscribe(ClientHandler clientHandler) {
         clientHandlers.remove ( clientHandler );
+        broadcastClientList ();
         System.out.println ( "Клиент: " + clientHandler.getNick () + " отключился" );
     }
 
@@ -73,5 +75,18 @@ public class ServerMain {
                 client.sendMsg ( strMsg );
             }
         }
+    }
+
+    public void broadcastClientList() {
+        StringBuilder sb = new StringBuilder ();
+        sb.append ( "/clientList " );
+        for (ClientHandler client : clientHandlers) {
+            sb.append ( client.getNick () + " " );
+        }
+        String out = sb.toString ();
+        for (ClientHandler client : clientHandlers) {
+            client.sendMsg ( out );
+        }
+
     }
 }

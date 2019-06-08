@@ -16,13 +16,20 @@
 
 }
 
+ #clientList {
+ /* -fx-background-size: cover;
+ -fx-background-repeat: no-repeat;*/
+ -fx-background-color: #ffe4b5;
+ /*-fx-font: 16px "Cursive"*/;
+ }
+
 #textArea {
-/*-fx-background-image: url(img/back.jpg);*/
--fx-background-size: cover;
--fx-background-repeat: no-repeat;
--fx-background-color: #e2be9a;
--fx-font: 16px "Cursive";
-}
+ /*-fx-background-image: url(img/back.jpg);*/
+ -fx-background-size: cover;
+ -fx-background-repeat: no-repeat;
+ -fx-background-color: #e2be9a;
+ -fx-font: 16px "Cursive";
+ }
 
 #textArea .scroll-pane {
 -fx-background-color: transparent;

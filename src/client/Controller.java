@@ -37,6 +37,9 @@ public class Controller {
     @FXML
     PasswordField passwordField;
 
+    @FXML
+    ListView clientList;
+
     private boolean isAuthorized;
 
     private String nickName;
@@ -53,27 +56,31 @@ public class Controller {
 
     DataOutputStream out;
 
-    void setStage (Stage stage){
+    void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    public void setAuthorized(boolean isAuthorized){
+    public void setAuthorized(boolean isAuthorized) {
         this.isAuthorized = isAuthorized;
-        Platform.runLater(() -> {
-            if (!isAuthorized){
+        Platform.runLater ( () -> {
+            if (!isAuthorized) {
                 upperPanel.setVisible ( true );
                 upperPanel.setManaged ( true );
                 bottomPanel.setVisible ( false );
                 bottomPanel.setManaged ( false );
+                clientList.setManaged ( false );
+                clientList.setVisible ( false );
                 stage.setTitle ( "Java Chat :" );
             } else {
                 upperPanel.setVisible ( false );
                 upperPanel.setManaged ( false );
                 bottomPanel.setVisible ( true );
                 bottomPanel.setManaged ( true );
+                clientList.setManaged ( true );
+                clientList.setVisible ( true );
                 stage.setTitle ( "Java Chat : " + nickName );
             }
-        });
+        } );
     }
 
     public void sendMsg() {
@@ -125,7 +132,6 @@ public class Controller {
     }
 
 
-
     public void connect() {
         try {
             socket = new Socket ( IP_ADRESS, PORT );
@@ -136,21 +142,31 @@ public class Controller {
                 @Override
                 public void run() {
                     try {
-                        while (true){
+                        while (true) {
                             String str = in.readUTF ();
-                            if (str.indexOf ( "/authok" )> -1){
+                            if (str.indexOf ( "/authok" ) > -1) {
                                 String[] tokens = str.split ( " " );
                                 nickName = tokens[1];
                                 setAuthorized ( true );
                                 break;
                             } else {
-                                textArea.appendText ( str + "\n");
+                                textArea.appendText ( str + "\n" );
                             }
 
                         }
                         while (true) {
                             String str = in.readUTF ();
                             if (str.indexOf ( "/serverClosed" ) > -1) break;
+                            if (str.startsWith ( "/clientList" )) {
+                                String[] tokens = str.split ( " " );
+                                Platform.runLater ( () -> {
+                                    clientList.getItems ().clear ();
+                                    for (int i = 1; i < tokens.length; i++) {
+                                        clientList.getItems ().add ( tokens[i] );
+                                    }
+                                } );
+                                continue;
+                            }
                             textArea.appendText ( str + "\n" );
                         }
                     } catch (IOException e) {
@@ -191,7 +207,7 @@ public class Controller {
     }
 
     public void tryToAuth(ActionEvent actionEvent) {
-        if (socket == null || socket.isClosed ()){
+        if (socket == null || socket.isClosed ()) {
             connect ();
         }
         try {

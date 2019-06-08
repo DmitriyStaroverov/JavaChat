@@ -21,7 +21,7 @@ public class Main extends Application {
         //
         primaryStage.setTitle("Java Chat :");
         primaryStage.getIcons ().add(new Image ( "file:src/img/hashtag.png" )) ;
-        primaryStage.setScene(new Scene(root, 400, 400));
+        primaryStage.setScene(new Scene(root, 640, 480));
         primaryStage.show();
     }
 
