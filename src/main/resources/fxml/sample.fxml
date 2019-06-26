@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?scenebuilder-stylesheet /css/styles.css?>
+
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ListView?>
+<VBox alignment="center" stylesheets="@/styles/styles.css" xmlns="http://javafx.com/javafx/8.0.172-ea"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
+    <MenuBar fx:id="menuBar">
+        <Menu mnemonicParsing="false" text="File">
+            <items>
+                <MenuItem mnemonicParsing="false" onAction="#menuProfile" text="Profile"/>
+
+                <MenuItem mnemonicParsing="false" onAction="#menuClear" text="Clear">
+                    <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="C" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" onAction="#menuCloseApp" text="Exit">
+                    <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="Q" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+            </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <items>
+                <MenuItem mnemonicParsing="false" text="Help" onAction="#menuHelp"/>
+
+            </items>
+        </Menu>
+    </MenuBar>
+    <HBox fx:id="upperPanel">
+        <TextField HBox.hgrow="ALWAYS" promptText="логин" fx:id="loginField" />
+        <PasswordField promptText="пароль" fx:id="passwordField" onAction="#tryToAuth"/>
+        <Button text="Авторизоваться" onAction="#tryToAuth"/>
+    </HBox>
+    <HBox VBox.vgrow="ALWAYS">
+       <VBox HBox.hgrow="ALWAYS">
+           <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+           <HBox fx:id="bottomPanel" managed="false" visible="false">
+               <TextField fx:id="textField" focusTraversable="true" onAction="#sendMsg" promptText="Введите сообщение"
+                          HBox.hgrow="ALWAYS"/>
+               <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)"/>
+               <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send"/>
+           </HBox>
+       </VBox>
+       <ListView fx:id="clientList" managed="true" visible="true"/>
+    </HBox>
+
+</VBox>
