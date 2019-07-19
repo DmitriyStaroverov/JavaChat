@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="net.evricom.javachat.client.ChildController"
+      prefHeight="480.0" prefWidth="480.0"
+      stylesheets="@/styles/styles.css">
+
+    <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+    <HBox fx:id="bottomPanel" managed="true" visible="true">
+        <TextField fx:id="textField" focusTraversable="true" onAction="#sendMsg" promptText="Введите сообщение"
+                   HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)"/>
+        <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send"/>
+    </HBox>
+</VBox>
+
