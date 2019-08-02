@@ -1,6 +1,7 @@
 package net.evricom.javachat.client;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -13,7 +14,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
+import javafx.stage.WindowEvent;
 import org.apache.commons.lang.StringUtils;
 
 public class Model extends Application {
@@ -35,6 +38,10 @@ public class Model extends Application {
     private DataInputStream in;
 
     private DataOutputStream out;
+
+    ArrayList<String> blackList = new ArrayList<>();
+
+    ArrayList<String> clientList = new ArrayList<>();
 
     private void setAuthorized(boolean authorized) {
         isAuthorized = authorized;
@@ -63,9 +70,23 @@ public class Model extends Application {
                     }
                     while (true) {
                         String str = in.readUTF();
-                        if (StringUtils.startsWith(str,"/serverClosed")) break;
-                        if (StringUtils.startsWith(str,"/clientList")) {
-                            controller.setItemsClientList(str);
+                        if (StringUtils.startsWith(str, "/serverClosed")) break;
+                        if (StringUtils.startsWith(str, "/clientList")) {
+                            clientList.clear();
+                            String[] tokens = str.split(" ");
+                            for (int i = 1; i < tokens.length; i++) {
+                                clientList.add(tokens[i]);
+                            }
+                            controller.setClientList();
+                            continue;
+                        }
+                        if (StringUtils.startsWith(str, "/blacklist")) {
+                            blackList.clear();
+                            String[] tokens = str.split(" ");
+                            for (int i = 1; i < tokens.length; i++) {
+                                blackList.add(tokens[i]);
+                            }
+                            controller.setClientList();
                             continue;
                         }
                         controller.showMsg(str);
@@ -89,6 +110,7 @@ public class Model extends Application {
         }
     }
 
+
     void tryToAuth(String login, String pass) {
         if (socket == null || socket.isClosed()) {
             connect();
@@ -108,7 +130,7 @@ public class Model extends Application {
         }
     }
 
-    public void newPrivateChat(String receiver) {
+    void newPrivateChat(String receiver) {
         if (StringUtils.isEmpty(receiver)) return;
         if (StringUtils.equals (receiver, nickName)) return;
         try {
@@ -141,6 +163,13 @@ public class Model extends Application {
         primaryStage.getIcons ().add(new Image ( "/images/hashtag.png" ));
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+        //
+        // close window
+        primaryStage.setOnCloseRequest(event -> {
+            if (isAuthorized) send("/end");
+            //event.consume(); если нужно отменить закрытие
+        });
+
     }
 
 
@@ -153,7 +182,6 @@ public class Model extends Application {
 
 /*
 FIXME
- 2 Хранить список блокированных пользователей (Blacklist) в базе данных.
  3 Добавить роль администратора (который может удалять клиентов из чата)
  4.Добавить отключение неавторизованных пользователей по таймауту
  (120 сек. ждём после подключения клиента, и если он не авторизовался за это время, закрываем соединение)

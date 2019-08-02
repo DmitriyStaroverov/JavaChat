@@ -54,6 +54,9 @@ public class ServerMain {
     }
 
     public ClientHandler getClientHandler(String nickName) {
+        if (nickName == null) {
+            return null;
+        }
         for (ClientHandler client :
                 clientHandlers) {
             if (client.getNick ().equals ( nickName )) {

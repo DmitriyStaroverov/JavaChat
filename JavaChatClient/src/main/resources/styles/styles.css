@@ -23,6 +23,26 @@
  /*-fx-font: 16px "Cursive"*/;
  }
 
+.label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );
+}
+
+#labelThisClient {
+    -fx-text-fill: #03C03C;
+}
+
+#labelBlackListClient {
+    -fx-text-fill: #9B2D30;
+}
+
+#labelNormClient {
+    -fx-text-fill: #000000;
+}
+
+
 #textArea {
  /*-fx-background-image: url(img/back.jpg);*/
  -fx-background-size: cover;

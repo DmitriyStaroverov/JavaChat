@@ -1,18 +1,25 @@
 package net.evricom.javachat.client;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
+import org.apache.commons.lang.StringUtils;
 
+import java.net.URL;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 import static javafx.application.Platform.exit;
 
-public class Controller {
+public class Controller implements Initializable {
 
     @FXML
     TextArea textArea;
@@ -35,6 +42,8 @@ public class Controller {
     @FXML
     ListView<String> clientList;
 
+    ObservableList<String> observableListClients;
+
     private Model model;
 
     void setModel(Model model) {
@@ -47,7 +56,7 @@ public class Controller {
 
     private Stage stage;
 
-    private void setCaptionApp(){
+    private void setCaptionApp() {
         stage.setTitle(Model.appName + " " + model.nickName);
     }
 
@@ -143,19 +152,67 @@ public class Controller {
         passwordField.clear();
     }
 
-    public void mouseClicked() {
-
-        model.newPrivateChat(clientList.getSelectionModel().getSelectedItem());
-
-
+    void setClientList() {
+        Platform.runLater(() -> {
+            observableListClients.clear();
+            for (String strClient:
+                 model.clientList) {
+                observableListClients.add(strClient);
+            }
+        });
     }
 
-    void setItemsClientList(String str) {
-        String[] tokens = str.split(" ");
-        Platform.runLater(() -> {
-            clientList.getItems().clear();
-            for (int i = 1; i < tokens.length; i++) {
-                clientList.getItems().add(tokens[i]);
+    private Label createLebelItem(String strItem) {
+        Label lb1 = new Label(strItem);
+        if (StringUtils.equals(strItem, model.nickName)) {
+           lb1.setId("labelThisClient");
+        } else if (model.blackList.contains(strItem)) {
+            lb1.setId("labelBlackListClient");
+            createContextMenuBlackList(lb1);
+        } else {
+            lb1.setId("labelNormClient");
+            createContextMenuNorm(lb1);
+        }
+        return lb1;
+    }
+
+    private void createContextMenuNorm(Label lb1) {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem menuItem1 = new MenuItem("Приватный чат");
+        menuItem1.setOnAction(event -> model.newPrivateChat(lb1.getText()));
+        MenuItem menuItem2 = new MenuItem("Внести в черный список");
+        menuItem2.setOnAction(event -> model.send("/blacklist ADD " + lb1.getText()));
+        contextMenu.getItems().addAll(menuItem1, menuItem2);
+        lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1,event.getScreenX(), event.getScreenY()));
+    }
+
+    private void createContextMenuBlackList(Label lb1) {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem menuItem = new MenuItem("Убрать из черного списка");
+        menuItem.setOnAction(event -> model.send("/blacklist DEL " + lb1.getText()));
+        contextMenu.getItems().add(menuItem);
+        lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1,event.getScreenX(), event.getScreenY()));
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+        observableListClients = FXCollections.observableArrayList();
+        clientList.setItems(observableListClients);
+        clientList.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+            public ListCell<String> call(ListView<String> param) {
+                return new ListCell<String>() {
+                    @Override
+                    protected void updateItem(String strItem, boolean empty) {
+                        super.updateItem(strItem, empty);
+                        if (empty || strItem == null) {
+                            setText(null);
+                            setGraphic(null);
+                        } else {
+                            setGraphic(createLebelItem(strItem));
+                        }
+                    }
+                };
             }
         });
     }

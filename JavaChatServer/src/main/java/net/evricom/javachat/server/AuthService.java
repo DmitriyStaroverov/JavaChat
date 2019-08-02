@@ -28,7 +28,6 @@ public class AuthService {
     }
 
 
-//    SELECT nickname FROM main WHERE login='login1' AND password='pass1'
     public static String getNickByLoginAndPass(String login, String pass){
         String sql = String.format ( "SELECT nickname FROM main WHERE login='%s' AND password='%s'", login, pass );
         try {
@@ -42,6 +41,64 @@ public class AuthService {
         }
         return null;
     }
+
+    public static String getBlackListForUser(String username) {
+        StringBuilder sb = new StringBuilder();
+        String sql = String.format(
+                "SELECT " +
+                        "main.nickname " +
+                        "FROM blacklist " +
+                        "INNER JOIN main " +
+                        "ON blacklist.id_nick_blocked = main.id " +
+                        "WHERE blacklist.id_nick_owner " +
+                        "IN (SELECT main.id FROM main WHERE main.nickname = '%s')",
+                username);
+
+        try {
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                sb.append(resultSet.getString(1));
+                sb.append(" ");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sb.toString().trim();
+    }
+
+    public static boolean deleteItemForBlackList(String nickOwner, String nickForBlocking) {
+        int rez = 0;
+        String sql = String.format(
+                "DELETE FROM blacklist " +
+                        "WHERE blacklist.id_nick_owner IN " +
+                        "(SELECT main.id FROM main WHERE main.nickname = '%s') " +
+                        "AND blacklist.id_nick_blocked IN " +
+                        "(SELECT main.id FROM main WHERE main.nickname = '%s')",
+                nickOwner, nickForBlocking);
+        try {
+            rez = statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return (rez==1);
+    }
+
+    public static boolean addItemForBlackList(String nickOwner, String nickForBlocking) {
+        int rez = 0;
+        String sql = String.format(
+                "INSERT INTO blacklist (id_nick_owner, id_nick_blocked) VALUES (" +
+                        "(SELECT main.id FROM main WHERE main.nickname = '%s'), " +
+                        "(SELECT main.id FROM main WHERE main.nickname = '%s')" +
+                        ")", nickOwner, nickForBlocking);
+        try {
+            rez = statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return (rez==1);
+    }
+
+
 
 }
 

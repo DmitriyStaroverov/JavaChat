@@ -14,49 +14,43 @@
 <?import javafx.scene.layout.VBox?>
 <?scenebuilder-stylesheet /css/styles.css?>
 
-<VBox alignment="center"
-      prefHeight="480.0" prefWidth="640.0"
-      stylesheets="@/styles/styles.css"
-      xmlns="http://javafx.com/javafx/8.0.172-ea"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="net.evricom.javachat.client.Controller">
+<VBox alignment="center" prefHeight="480.0" prefWidth="640.0" stylesheets="@/styles/styles.css" xmlns="http://javafx.com/javafx/8.0.151" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.evricom.javachat.client.Controller">
 
     <MenuBar fx:id="menuBar">
         <Menu mnemonicParsing="false" text="File">
-            <MenuItem mnemonicParsing="false" onAction="#menuProfile" text="Profile"/>
+            <MenuItem mnemonicParsing="false" onAction="#menuProfile" text="Profile" />
 
             <MenuItem mnemonicParsing="false" onAction="#menuClear" text="Clear">
                 <accelerator>
-                    <KeyCodeCombination alt="DOWN" code="C" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    <KeyCodeCombination alt="DOWN" code="C" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
-            <SeparatorMenuItem mnemonicParsing="false"/>
+            <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#menuCloseApp" text="Exit">
                 <accelerator>
-                    <KeyCodeCombination alt="DOWN" code="Q" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    <KeyCodeCombination alt="DOWN" code="Q" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
-            <MenuItem mnemonicParsing="false" onAction="#menuHelp" text="Help"/>
+            <MenuItem mnemonicParsing="false" onAction="#menuHelp" text="Help" />
         </Menu>
     </MenuBar>
     <HBox fx:id="upperPanel">
-        <TextField fx:id="loginField" promptText="логин" HBox.hgrow="ALWAYS"/>
-        <PasswordField fx:id="passwordField" onAction="#authBtn" promptText="пароль"/>
-        <Button onAction="#authBtn" text="Авторизоваться"/>
+        <TextField fx:id="loginField" promptText="логин" HBox.hgrow="ALWAYS" />
+        <PasswordField fx:id="passwordField" onAction="#authBtn" promptText="пароль" />
+        <Button onAction="#authBtn" text="Авторизоваться" />
     </HBox>
     <HBox VBox.vgrow="ALWAYS">
-        <VBox HBox.hgrow="ALWAYS">
-            <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+        <VBox HBox.hgrow="ALWAYS" >
+            <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS" />
             <HBox fx:id="bottomPanel" managed="false" visible="false">
-                <TextField fx:id="textField" onAction="#sendMsg" promptText="Введите сообщение"
-                           HBox.hgrow="ALWAYS"/>
-                <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)"/>
-                <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send"/>
+                <TextField fx:id="textField" onAction="#sendMsg" promptText="Введите сообщение" HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnSmile" focusTraversable="false" onAction="#toSmile" text=":)" />
+                <Button fx:id="btnSend" focusTraversable="false" onAction="#sendMsg" text="Send" />
             </HBox>
         </VBox>
-        <ListView fx:id="clientList" onMouseClicked="#mouseClicked" visible="true"/>
+        <ListView fx:id="clientList" visible="false" managed="false"/>
     </HBox>
 
 </VBox>

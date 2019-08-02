@@ -27,11 +27,11 @@ public class ClientHandler implements Runnable {
 
     private String nick;
 
-    public String getNick() {
+    String getNick() {
         return nick;
     }
 
-    public ClientHandler(ServerMain serverMain, Socket socket) throws IOException {
+    ClientHandler(ServerMain serverMain, Socket socket) throws IOException {
         this.serverMain = serverMain;
         this.socket = socket;
         this.in = new DataInputStream ( socket.getInputStream () );
@@ -53,6 +53,7 @@ public class ClientHandler implements Runnable {
                             sendMsg ( "/authok " + newNick );
                             this.nick = newNick;
                             serverMain.subscribe ( this );
+                            updateBlackList();
                             break;
                         } else {
                             sendMsg("Пользователь " + newNick + " уже подключен!");
@@ -73,12 +74,17 @@ public class ClientHandler implements Runnable {
                     }
                     if (str.indexOf ( "/blacklist" ) > -1) {
                         String[] tokens = str.split ( " " );
-                        if (serverMain.getClientHandler ( tokens[1] ) != null) {
-                            blacklist.add ( tokens[1] );
-                            sendMsg ( "Вы добавили пользователя " + tokens[1] + " в черный список!" );
-                        } else {
-                            sendMsg ( "Пользователь " + tokens[1] + " не подключен" );
+                        if (serverMain.getClientHandler(tokens[2]) == null){
+                            sendMsg ( "Пользователь " + tokens[2] + " не подключен"  );
+                        } if (tokens[1].equals("ADD")){
+                            AuthService.addItemForBlackList(getNick(),tokens[2]);
+                            sendMsg ( "Вы добавили пользователя " + tokens[2] + " в черный список!" );
+                         } if (tokens[1].equals("DEL")){
+                            AuthService.deleteItemForBlackList(getNick(),tokens[2]);
+                            sendMsg ( "Вы удалили пользователя " + tokens[2] + " из черного списка!" );
                         }
+                        updateBlackList();
+                        continue;
                     }
                     //отправка личных сообщений
                     if (str.indexOf ( "/w " ) > -1) {
@@ -124,6 +130,16 @@ public class ClientHandler implements Runnable {
 
         }
 
+    }
+
+    private void updateBlackList(){
+        blacklist.clear();
+        String s = AuthService.getBlackListForUser(nick);
+        String[] tokens = s.split(" ");
+        for (int i = 0; i < tokens.length; i++) {
+            blacklist.add(tokens[i]);
+        }
+        sendMsg("/blacklist " + s);
     }
 
     public boolean checkBlackList(String nick) {
