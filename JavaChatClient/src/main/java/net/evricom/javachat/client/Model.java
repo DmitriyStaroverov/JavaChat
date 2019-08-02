@@ -130,6 +130,14 @@ public class Model extends Application {
         }
     }
 
+    public void addItemForBlackList(String strItem) {
+        send("/blacklist ADD " + strItem);
+    }
+
+    public void deleteItemForBlackList(String strItem) {
+        send("/blacklist DEL " + strItem);
+    }
+
     void newPrivateChat(String receiver) {
         if (StringUtils.isEmpty(receiver)) return;
         if (StringUtils.equals (receiver, nickName)) return;
@@ -176,7 +184,6 @@ public class Model extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
 
 }
 

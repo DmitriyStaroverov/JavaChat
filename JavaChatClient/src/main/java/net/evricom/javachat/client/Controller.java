@@ -181,7 +181,7 @@ public class Controller implements Initializable {
         MenuItem menuItem1 = new MenuItem("Приватный чат");
         menuItem1.setOnAction(event -> model.newPrivateChat(lb1.getText()));
         MenuItem menuItem2 = new MenuItem("Внести в черный список");
-        menuItem2.setOnAction(event -> model.send("/blacklist ADD " + lb1.getText()));
+        menuItem2.setOnAction(event -> model.addItemForBlackList(lb1.getText()));
         contextMenu.getItems().addAll(menuItem1, menuItem2);
         lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1,event.getScreenX(), event.getScreenY()));
     }
@@ -189,7 +189,7 @@ public class Controller implements Initializable {
     private void createContextMenuBlackList(Label lb1) {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem menuItem = new MenuItem("Убрать из черного списка");
-        menuItem.setOnAction(event -> model.send("/blacklist DEL " + lb1.getText()));
+        menuItem.setOnAction(event -> model.deleteItemForBlackList(lb1.getText()));
         contextMenu.getItems().add(menuItem);
         lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1,event.getScreenX(), event.getScreenY()));
     }
