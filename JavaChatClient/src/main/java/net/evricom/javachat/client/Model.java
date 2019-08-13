@@ -1,13 +1,13 @@
 package net.evricom.javachat.client;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,9 +15,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-
-import javafx.stage.WindowEvent;
-import org.apache.commons.lang.StringUtils;
+import java.util.Arrays;
 
 public class Model extends Application {
 
@@ -74,18 +72,14 @@ public class Model extends Application {
                         if (StringUtils.startsWith(str, "/clientList")) {
                             clientList.clear();
                             String[] tokens = str.split(" ");
-                            for (int i = 1; i < tokens.length; i++) {
-                                clientList.add(tokens[i]);
-                            }
+                            clientList.addAll(Arrays.asList(tokens).subList(1, tokens.length));
                             controller.setClientList();
                             continue;
                         }
                         if (StringUtils.startsWith(str, "/blacklist")) {
                             blackList.clear();
                             String[] tokens = str.split(" ");
-                            for (int i = 1; i < tokens.length; i++) {
-                                blackList.add(tokens[i]);
-                            }
+                            blackList.addAll(Arrays.asList(tokens).subList(1, tokens.length));
                             controller.setClientList();
                             continue;
                         }
