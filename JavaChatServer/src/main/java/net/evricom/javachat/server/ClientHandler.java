@@ -8,8 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
 public class ClientHandler implements Runnable {
 
@@ -41,12 +40,15 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-
         try {
             while (true) {
-                String str = in.readUTF ();
+               String str = in.readUTF ();
                 if (str.startsWith ( "/auth" )) {
                     String[] tokens = str.split ( " " );
+                    if (tokens.length < 3) {
+                        sendMsg("Пустые логин/пароль");
+                        continue;
+                    }
                     String newNick = AuthService.getNickByLoginAndPass ( tokens[1], tokens[2] );
                     if (newNick != null) {
                         if (serverMain.getClientHandler ( newNick ) == null) {
@@ -75,13 +77,13 @@ public class ClientHandler implements Runnable {
                     if (str.indexOf ( "/blacklist" ) > -1) {
                         String[] tokens = str.split ( " " );
                         if (serverMain.getClientHandler(tokens[2]) == null){
-                            sendMsg ( "Пользователь " + tokens[2] + " не подключен"  );
+                            sendMsg ("Пользователь " + tokens[2] + " не подключен" );
                         } if (tokens[1].equals("ADD")){
                             AuthService.addItemForBlackList(getNick(),tokens[2]);
-                            sendMsg ( "Вы добавили пользователя " + tokens[2] + " в черный список!" );
+                            sendMsg ("Вы добавили пользователя " + tokens[2] + " в черный список!" );
                          } if (tokens[1].equals("DEL")){
                             AuthService.deleteItemForBlackList(getNick(),tokens[2]);
-                            sendMsg ( "Вы удалили пользователя " + tokens[2] + " из черного списка!" );
+                            sendMsg ("Вы удалили пользователя " + tokens[2] + " из черного списка!" );
                         }
                         updateBlackList();
                         continue;
@@ -136,17 +138,15 @@ public class ClientHandler implements Runnable {
         blacklist.clear();
         String s = AuthService.getBlackListForUser(nick);
         String[] tokens = s.split(" ");
-        for (int i = 0; i < tokens.length; i++) {
-            blacklist.add(tokens[i]);
-        }
+        Collections.addAll(blacklist, tokens);
         sendMsg("/blacklist " + s);
     }
 
-    public boolean checkBlackList(String nick) {
+    boolean checkBlackList(String nick) {
         return blacklist.contains ( nick );
     }
 
-    public void sendMsg(String strMsg) {
+    void sendMsg(String strMsg) {
         try {
             out.writeUTF ( strMsg );
         } catch (IOException e) {
@@ -154,3 +154,4 @@ public class ClientHandler implements Runnable {
         }
     }
 }
+

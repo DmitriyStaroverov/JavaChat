@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerMain {
+
+    public static final long TIMEOUT = 600;
 
     private static final Logger log = LoggerFactory.getLogger(ServerMain.class);
 
@@ -29,6 +33,21 @@ public class ServerMain {
                 Thread threadClient = new Thread ( clientHandler );
                 threadClient.setDaemon ( true );
                 threadClient.start ();
+
+                log.debug("Сокет принял соединение c адреса " + socket.getInetAddress() + ", ");
+//                System.out.println("Current time" + System.currentTimeMillis());
+//                Timer timer = new Timer();
+//                timer.schedule(new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        System.out.println("123456");
+//                        if(clientHandler.getNick().equals("")){
+//                            System.out.println("123");
+//                        }
+//                    }
+//                },ServerMain.TIMEOUT);
+//                System.out.println("Current time" + System.currentTimeMillis());
+
             }
         } catch (IOException e) {
             e.printStackTrace ();
