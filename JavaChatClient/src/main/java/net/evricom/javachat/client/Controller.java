@@ -130,6 +130,7 @@ public class Controller implements Initializable {
 
 
     public void menuCloseApp() {
+        if (model.isAuthorized) model.send("/end");
         exit();
     }
 
