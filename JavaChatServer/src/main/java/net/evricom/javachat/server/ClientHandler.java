@@ -14,6 +14,8 @@ public class ClientHandler implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
 
+    private static final long TIMEOUT = 120000;
+
     private ServerMain serverMain;
 
     private Socket socket;
@@ -33,28 +35,43 @@ public class ClientHandler implements Runnable {
     ClientHandler(ServerMain serverMain, Socket socket) throws IOException {
         this.serverMain = serverMain;
         this.socket = socket;
-        this.in = new DataInputStream ( socket.getInputStream () );
-        this.out = new DataOutputStream ( socket.getOutputStream () );
-        this.blacklist = new ArrayList<> ();
+        this.in = new DataInputStream(socket.getInputStream());
+        this.out = new DataOutputStream(socket.getOutputStream());
+        this.blacklist = new ArrayList<>();
     }
 
     @Override
     public void run() {
         try {
+            // Start TIMEOUT
+            long t1 = System.currentTimeMillis();
+            log.debug("Cоединение c адреса " + socket.getInetAddress() +
+                    ", время = " + System.currentTimeMillis() + ".");
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (getNick() == null) {
+                        sendMsg("/TIMEOUT");
+                        log.debug("TIMEOUT для соединения, время которого " + (t1) + " мсек.");
+                    }
+                }
+            }, TIMEOUT);
+            // end TIMEOUT
             while (true) {
-               String str = in.readUTF ();
-                if (str.startsWith ( "/auth" )) {
-                    String[] tokens = str.split ( " " );
+                String str = in.readUTF();
+                if (str.startsWith("/auth")) {
+                    String[] tokens = str.split(" ");
                     if (tokens.length < 3) {
                         sendMsg("Пустые логин/пароль");
                         continue;
                     }
-                    String newNick = AuthService.getNickByLoginAndPass ( tokens[1], tokens[2] );
+                    String newNick = AuthService.getNickByLoginAndPass(tokens[1], tokens[2]);
                     if (newNick != null) {
-                        if (serverMain.getClientHandler ( newNick ) == null) {
-                            sendMsg ( "/authok " + newNick );
+                        if (serverMain.getClientHandler(newNick) == null) {
+                            sendMsg("/authok " + newNick);
                             this.nick = newNick;
-                            serverMain.subscribe ( this );
+                            serverMain.subscribe(this);
                             updateBlackList();
                             break;
                         } else {
@@ -64,77 +81,82 @@ public class ClientHandler implements Runnable {
                         sendMsg("Неверный логин/пароль");
                     }
                 }
+                if (str.startsWith("/end")) {
+                    sendMsg("/serverClosed");
+                    log.debug("Завершение соединения, время которого " + (t1) + " мсек.");
+                    break;
+                }
+
             }
-            SimpleDateFormat timeFormat = new SimpleDateFormat ( "[H:mm:ss]" );
-            while (true) {
-                String str = in.readUTF ();
+            SimpleDateFormat timeFormat = new SimpleDateFormat("[H:mm:ss]");
+            while (getNick() != null) {
+                String str = in.readUTF();
                 // блок служебных сообщений
-                if (str.indexOf ( "/" ) > -1) {
-                    if (str.indexOf ( "/end" ) > -1) {
-                        out.writeUTF ( "/serverClosed" );
+                if (str.indexOf("/") > -1) {
+                    if (str.indexOf("/end") > -1) {
+                        out.writeUTF("/serverClosed");
                         break;
                     }
-                    if (str.indexOf ( "/blacklist" ) > -1) {
-                        String[] tokens = str.split ( " " );
-                        if (serverMain.getClientHandler(tokens[2]) == null){
-                            sendMsg ("Пользователь " + tokens[2] + " не подключен" );
-                        } if (tokens[1].equals("ADD")){
-                            AuthService.addItemForBlackList(getNick(),tokens[2]);
-                            sendMsg ("Вы добавили пользователя " + tokens[2] + " в черный список!" );
-                         } if (tokens[1].equals("DEL")){
-                            AuthService.deleteItemForBlackList(getNick(),tokens[2]);
-                            sendMsg ("Вы удалили пользователя " + tokens[2] + " из черного списка!" );
+                    if (str.indexOf("/blacklist") > -1) {
+                        String[] tokens = str.split(" ");
+                        if (serverMain.getClientHandler(tokens[2]) == null) {
+                            sendMsg("Пользователь " + tokens[2] + " не подключен");
+                        }
+                        if (tokens[1].equals("ADD")) {
+                            AuthService.addItemForBlackList(getNick(), tokens[2]);
+                            sendMsg("Вы добавили пользователя " + tokens[2] + " в черный список!");
+                        }
+                        if (tokens[1].equals("DEL")) {
+                            AuthService.deleteItemForBlackList(getNick(), tokens[2]);
+                            sendMsg("Вы удалили пользователя " + tokens[2] + " из черного списка!");
                         }
                         updateBlackList();
                         continue;
                     }
                     //отправка личных сообщений
-                    if (str.indexOf ( "/w " ) > -1) {
-                        String[] tokens = str.split ( " ", 3 );
+                    if (str.indexOf("/w ") > -1) {
+                        String[] tokens = str.split(" ", 3);
                         if (tokens.length < 3) {
-                            sendMsg ( "Ошибка личного личного сообщения" );
+                            sendMsg("Ошибка личного личного сообщения");
                             continue;
                         }
-                        ClientHandler clientToPrivatMsg = serverMain.getClientHandler ( tokens[1] );
+                        ClientHandler clientToPrivatMsg = serverMain.getClientHandler(tokens[1]);
                         if (clientToPrivatMsg != null) {
-                            clientToPrivatMsg.sendMsg ( timeFormat.format ( new Date () ) + " " + getNick () + "(privat): " + tokens[2] );
-                            sendMsg ( timeFormat.format ( new Date () ) + " " + getNick () + "(privat): " + tokens[2] );
+                            clientToPrivatMsg.sendMsg(timeFormat.format(new Date()) + " " + getNick() + "(privat): " + tokens[2]);
+                            sendMsg(timeFormat.format(new Date()) + " " + getNick() + "(privat): " + tokens[2]);
                         } else {
-                            sendMsg ( "Пользователь с ником " + tokens[1] + " не подключен" );
+                            sendMsg("Пользователь с ником " + tokens[1] + " не подключен");
                         }
                     }
                 } else {
-                    serverMain.broadcastMsg ( this, timeFormat.format ( new Date () ) + " " + getNick () + ": " + str );
-                    log.debug( "Поток: " + Thread.currentThread ().getName () + "; строка: " + str );
+                    serverMain.broadcastMsg(this, timeFormat.format(new Date()) + " " + getNick() + ": " + str);
+                    log.debug("Поток: " + Thread.currentThread().getName() + "; строка: " + str);
                 }
             }
-
         } catch (IOException e) {
-            e.printStackTrace ();
+            e.printStackTrace();
         } finally {
-
             try {
-                in.close ();
+                in.close();
             } catch (IOException e) {
-                e.printStackTrace ();
+                e.printStackTrace();
             }
             try {
-                out.close ();
+                out.close();
             } catch (IOException e) {
-                e.printStackTrace ();
+                e.printStackTrace();
             }
             try {
-                socket.close ();
+                socket.close();
             } catch (IOException e) {
-                e.printStackTrace ();
+                e.printStackTrace();
             }
-            serverMain.unsubscribe ( this );
-
+            serverMain.unsubscribe(this);
         }
-
     }
 
-    private void updateBlackList(){
+
+    private void updateBlackList() {
         blacklist.clear();
         String s = AuthService.getBlackListForUser(nick);
         String[] tokens = s.split(" ");
@@ -143,14 +165,14 @@ public class ClientHandler implements Runnable {
     }
 
     boolean checkBlackList(String nick) {
-        return blacklist.contains ( nick );
+        return blacklist.contains(nick);
     }
 
     void sendMsg(String strMsg) {
         try {
-            out.writeUTF ( strMsg );
+            if (!socket.isClosed()) out.writeUTF(strMsg);
         } catch (IOException e) {
-            e.printStackTrace ();
+            e.printStackTrace();
         }
     }
 }

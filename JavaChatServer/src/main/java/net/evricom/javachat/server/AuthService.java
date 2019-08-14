@@ -11,7 +11,6 @@ public class AuthService {
 
     private static Connection connection;
     private static Statement statement;
-    private static PreparedStatement preparedStatement;
 
     public static void connect() throws SQLException {
         DriverManager.registerDriver(new org.sqlite.JDBC ());
@@ -33,7 +32,7 @@ public class AuthService {
         // для безопасности (возможности использовать в поле логин-пароль SQL-иньекции )используем preparedStatement
         String sql = "SELECT nickname FROM main WHERE login=? AND password=?";
         try {
-            preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1,login);
             preparedStatement.setString(2,pass);
             ResultSet resultSet = preparedStatement.executeQuery ();
