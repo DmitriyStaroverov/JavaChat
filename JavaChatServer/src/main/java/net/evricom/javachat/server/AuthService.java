@@ -11,12 +11,24 @@ public class AuthService {
 
     private static Connection connection;
     private static Statement statement;
+    private static PreparedStatement prepStatAddHystory;
 
     public static void connect() throws SQLException {
         DriverManager.registerDriver(new org.sqlite.JDBC ());
         //Class.forName ( "org.sqlite.JDBC" );
         connection = DriverManager.getConnection ( "jdbc:sqlite:userDB.db" );
         statement = connection.createStatement ();
+        // ADD history
+        String sqlAddHistory = "INSERT INTO history(date_msg,sender_id,receiver_id,msg) VALUES(" +
+                "?," +
+                "(SELECT main.id FROM main WHERE main.nickname=?)," +
+                "(SELECT main.id FROM main WHERE main.nickname=?)," +
+                "?" +
+                ")";
+        prepStatAddHystory = connection.prepareStatement(sqlAddHistory);
+        // GET history
+
+
     }
 
     public static void disconnect(){
@@ -25,6 +37,20 @@ public class AuthService {
         } catch (SQLException e) {
             e.printStackTrace ();
         }
+    }
+
+    public static boolean addHistory(java.util.Date datetime, String sender, String receiver, String msg ){
+        int rez = 0;
+        try {
+            prepStatAddHystory.setDate(1, new java.sql.Date(datetime.getTime()));
+            prepStatAddHystory.setString(2, sender);
+            prepStatAddHystory.setString(3, receiver);
+            prepStatAddHystory.setString(4,msg);
+            rez = prepStatAddHystory.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return (rez==1);
     }
 
 

@@ -122,6 +122,7 @@ public class ClientHandler implements Runnable {
                         }
                         ClientHandler clientToPrivatMsg = serverMain.getClientHandler(tokens[1]);
                         if (clientToPrivatMsg != null) {
+                            AuthService.addHistory(new Date(),getNick(),clientToPrivatMsg.getNick(),tokens[2]);
                             clientToPrivatMsg.sendMsg(timeFormat.format(new Date()) + " " + getNick() + "(privat): " + tokens[2]);
                             sendMsg(timeFormat.format(new Date()) + " " + getNick() + "(privat): " + tokens[2]);
                         } else {
@@ -129,6 +130,7 @@ public class ClientHandler implements Runnable {
                         }
                     }
                 } else {
+                    AuthService.addHistory(new Date(), getNick(), null, str);
                     serverMain.broadcastMsg(this, timeFormat.format(new Date()) + " " + getNick() + ": " + str);
                     log.debug("Поток: " + Thread.currentThread().getName() + "; строка: " + str);
                 }
