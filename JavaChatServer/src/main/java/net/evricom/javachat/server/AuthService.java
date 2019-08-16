@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class AuthService {
 
@@ -11,13 +12,15 @@ public class AuthService {
 
     private static Connection connection;
     private static Statement statement;
-    private static PreparedStatement prepStatAddHystory;
+    private static PreparedStatement prepStatAddHistory;
+    private static PreparedStatement prepstatGetHistory;
+
 
     public static void connect() throws SQLException {
-        DriverManager.registerDriver(new org.sqlite.JDBC ());
+        DriverManager.registerDriver(new org.sqlite.JDBC());
         //Class.forName ( "org.sqlite.JDBC" );
-        connection = DriverManager.getConnection ( "jdbc:sqlite:userDB.db" );
-        statement = connection.createStatement ();
+        connection = DriverManager.getConnection("jdbc:sqlite:userDB.db");
+        statement = connection.createStatement();
         // ADD history
         String sqlAddHistory = "INSERT INTO history(date_msg,sender_id,receiver_id,msg) VALUES(" +
                 "?," +
@@ -25,49 +28,78 @@ public class AuthService {
                 "(SELECT main.id FROM main WHERE main.nickname=?)," +
                 "?" +
                 ")";
-        prepStatAddHystory = connection.prepareStatement(sqlAddHistory);
-        // GET history
-
+        prepStatAddHistory = connection.prepareStatement(sqlAddHistory);
+        // GET Privat history
+        String sqlGetHistory = "SELECT history.date_msg, main.nickname AS sender, history.receiver_id, history.msg " +
+                "FROM history INNER JOIN main ON history.sender_id = main.id " +
+                "WHERE (receiver_id IN (SELECT id FROM main WHERE main.nickname = ?)) " +
+                "OR " +
+                "receiver_id ISNULL " +
+                "ORDER BY history.date_msg;";
+        prepstatGetHistory = connection.prepareStatement(sqlGetHistory);
 
     }
 
-    public static void disconnect(){
+    public static void disconnect() {
         try {
-            connection.close ();
-        } catch (SQLException e) {
-            e.printStackTrace ();
-        }
-    }
-
-    public static boolean addHistory(java.util.Date datetime, String sender, String receiver, String msg ){
-        int rez = 0;
-        try {
-            prepStatAddHystory.setDate(1, new java.sql.Date(datetime.getTime()));
-            prepStatAddHystory.setString(2, sender);
-            prepStatAddHystory.setString(3, receiver);
-            prepStatAddHystory.setString(4,msg);
-            rez = prepStatAddHystory.executeUpdate();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return (rez==1);
+    }
+
+    public static String getHistory(String nickname, ArrayList<String> blacklist) {
+        StringBuilder sb = new StringBuilder();
+        java.util.Date dateMsg;
+        boolean statusPrivat = false;
+        try {
+            prepstatGetHistory.setString(1, nickname);
+            ResultSet resultSet = prepstatGetHistory.executeQuery();
+            while (resultSet.next()) {
+                String strNick = resultSet.getString("sender");
+                statusPrivat = resultSet.getInt("receiver_id") != 0;
+                // если в черном списке и неприватно, пропускаем сообщение
+                if (blacklist.contains(strNick) & !statusPrivat ) continue;
+                dateMsg = resultSet.getDate("date_msg");
+                String strMsg = resultSet.getString("msg");
+                sb.append(ClientHandler.formatMsgStr(dateMsg, strNick, strMsg, statusPrivat));
+                sb.append("\n");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sb.toString().trim();
+    }
+
+    public static boolean addHistory(java.util.Date datetime, String sender, String receiver, String msg) {
+        int rez = 0;
+        try {
+            prepStatAddHistory.setDate(1, new java.sql.Date(datetime.getTime()));
+            prepStatAddHistory.setString(2, sender);
+            prepStatAddHistory.setString(3, receiver);
+            prepStatAddHistory.setString(4, msg);
+            rez = prepStatAddHistory.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return (rez == 1);
     }
 
 
-    public static String getNickByLoginAndPass(String login, String pass){
+    public static String getNickByLoginAndPass(String login, String pass) {
         // для безопасности (возможности использовать в поле логин-пароль SQL-иньекции )используем preparedStatement
         String sql = "SELECT nickname FROM main WHERE login=? AND password=?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1,login);
-            preparedStatement.setString(2,pass);
-            ResultSet resultSet = preparedStatement.executeQuery ();
-            if (resultSet.next ()){
-                return resultSet.getString ( 1 );
+            preparedStatement.setString(1, login);
+            preparedStatement.setString(2, pass);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString(1);
             }
 
         } catch (SQLException e) {
-            e.printStackTrace ();
+            e.printStackTrace();
         }
         return null;
     }
@@ -110,7 +142,7 @@ public class AuthService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return (rez==1);
+        return (rez == 1);
     }
 
     public static boolean addItemForBlackList(String nickOwner, String nickForBlocking) {
@@ -125,9 +157,8 @@ public class AuthService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return (rez==1);
+        return (rez == 1);
     }
-
 
 
 }

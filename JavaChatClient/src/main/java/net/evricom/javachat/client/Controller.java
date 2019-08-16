@@ -91,6 +91,10 @@ public class Controller implements Initializable {
         textArea.appendText(msg + "\n");
     }
 
+    void clearArea(){
+        textArea.clear();
+    }
+
     public void menuProfile() {
         Dialog dialogProfile = new Dialog();
         dialogProfile.setTitle("User profile");
@@ -124,7 +128,7 @@ public class Controller implements Initializable {
         alert.setContentText("Вы действительно хотите удалить все сообщения?");
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.YES) {
-            this.textArea.clear();
+            clearArea();
         }
     }
 

@@ -80,6 +80,12 @@ public class Model extends Application {
                             controller.setClientList();
                             continue;
                         }
+                        if (StringUtils.startsWith(str, "/history")) {
+                            controller.clearArea();
+                            String[] tokens = str.split(" ",2);
+                            controller.showMsg(tokens[1]);
+                            continue;
+                        }
                         if (StringUtils.startsWith(str, "/blacklist")) {
                             blackList.clear();
                             String[] tokens = str.split(" ");

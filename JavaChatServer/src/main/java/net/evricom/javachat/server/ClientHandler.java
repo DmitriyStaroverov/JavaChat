@@ -16,6 +16,8 @@ public class ClientHandler implements Runnable {
 
     private static final long TIMEOUT = 120000;
 
+    private static final SimpleDateFormat timeFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+
     private ServerMain serverMain;
 
     private Socket socket;
@@ -73,6 +75,7 @@ public class ClientHandler implements Runnable {
                             this.nick = newNick;
                             serverMain.subscribe(this);
                             updateBlackList();
+                            sendHistory();
                             break;
                         } else {
                             sendMsg("Пользователь " + newNick + " уже подключен!");
@@ -88,7 +91,6 @@ public class ClientHandler implements Runnable {
                 }
 
             }
-            SimpleDateFormat timeFormat = new SimpleDateFormat("[H:mm:ss]");
             while (getNick() != null) {
                 String str = in.readUTF();
                 // блок служебных сообщений
@@ -111,6 +113,7 @@ public class ClientHandler implements Runnable {
                             sendMsg("Вы удалили пользователя " + tokens[2] + " из черного списка!");
                         }
                         updateBlackList();
+                        sendHistory();
                         continue;
                     }
                     //отправка личных сообщений
@@ -122,16 +125,17 @@ public class ClientHandler implements Runnable {
                         }
                         ClientHandler clientToPrivatMsg = serverMain.getClientHandler(tokens[1]);
                         if (clientToPrivatMsg != null) {
-                            AuthService.addHistory(new Date(),getNick(),clientToPrivatMsg.getNick(),tokens[2]);
-                            clientToPrivatMsg.sendMsg(timeFormat.format(new Date()) + " " + getNick() + "(privat): " + tokens[2]);
-                            sendMsg(timeFormat.format(new Date()) + " " + getNick() + "(privat): " + tokens[2]);
+                            Date currDate = new Date();
+                            AuthService.addHistory(currDate,getNick(),clientToPrivatMsg.getNick(),tokens[2]);
+                            clientToPrivatMsg.sendMsg(formatMsgStr(currDate, getNick(), tokens[2], true));
+                            sendMsg(formatMsgStr(currDate,getNick(),tokens[2],true));
                         } else {
                             sendMsg("Пользователь с ником " + tokens[1] + " не подключен");
                         }
                     }
                 } else {
                     AuthService.addHistory(new Date(), getNick(), null, str);
-                    serverMain.broadcastMsg(this, timeFormat.format(new Date()) + " " + getNick() + ": " + str);
+                    serverMain.broadcastMsg(this, formatMsgStr(new Date(),getNick(),str, false));
                     log.debug("Поток: " + Thread.currentThread().getName() + "; строка: " + str);
                 }
             }
@@ -155,6 +159,24 @@ public class ClientHandler implements Runnable {
             }
             serverMain.unsubscribe(this);
         }
+    }
+
+    private void sendHistory() {
+        sendMsg("/history " + AuthService.getHistory(getNick(),blacklist));
+    }
+
+    static String formatMsgStr(java.util.Date dateMsg, String nickname, String strMsg, boolean privatMsg ){
+        StringBuilder sb = new StringBuilder();
+        sb.append(nickname);
+        sb.append(" (");
+        sb.append(timeFormat.format(dateMsg));
+        if (privatMsg){
+            sb.append(")(PRIVAT): ");
+        } else {
+            sb.append("): ");
+        }
+        sb.append(strMsg);
+        return sb.toString();
     }
 
 
