@@ -3,6 +3,7 @@ package net.evricom.javachat.client;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -23,24 +24,23 @@ public class Controller implements Initializable {
 
     @FXML
     TextArea textArea;
-
     @FXML
     TextField textField;
-
     @FXML
     HBox upperPanel;
-
     @FXML
     HBox bottomPanel;
-
     @FXML
     TextField loginField;
-
     @FXML
     PasswordField passwordField;
-
     @FXML
     ListView<String> clientList;
+    @FXML
+    HBox registerPanel;
+    @FXML
+    TextField regLogin, regNick, regPass;
+
 
     ObservableList<String> observableListClients;
 
@@ -66,6 +66,8 @@ public class Controller implements Initializable {
             if (!model.isAuthorized) {
                 upperPanel.setVisible(true);
                 upperPanel.setManaged(true);
+                registerPanel.setVisible(true);
+                registerPanel.setManaged(true);
                 bottomPanel.setVisible(false);
                 bottomPanel.setManaged(false);
                 clientList.setManaged(false);
@@ -73,6 +75,8 @@ public class Controller implements Initializable {
             } else {
                 upperPanel.setVisible(false);
                 upperPanel.setManaged(false);
+                registerPanel.setVisible(false);
+                registerPanel.setManaged(false);
                 bottomPanel.setVisible(true);
                 bottomPanel.setManaged(true);
                 clientList.setManaged(true);
@@ -91,7 +95,7 @@ public class Controller implements Initializable {
         textArea.appendText(msg + "\n");
     }
 
-    void clearArea(){
+    void clearArea() {
         textArea.clear();
     }
 
@@ -160,8 +164,8 @@ public class Controller implements Initializable {
     void setClientList() {
         Platform.runLater(() -> {
             observableListClients.clear();
-            for (String strClient:
-                 model.clientList) {
+            for (String strClient :
+                    model.clientList) {
                 observableListClients.add(strClient);
             }
         });
@@ -170,7 +174,7 @@ public class Controller implements Initializable {
     private Label createLebelItem(String strItem) {
         Label lb1 = new Label(strItem);
         if (StringUtils.equals(strItem, model.nickName)) {
-           lb1.setId("labelThisClient");
+            lb1.setId("labelThisClient");
         } else if (model.blackList.contains(strItem)) {
             lb1.setId("labelBlackListClient");
             createContextMenuBlackList(lb1);
@@ -188,7 +192,7 @@ public class Controller implements Initializable {
         MenuItem menuItem2 = new MenuItem("Внести в черный список");
         menuItem2.setOnAction(event -> model.addItemForBlackList(lb1.getText()));
         contextMenu.getItems().addAll(menuItem1, menuItem2);
-        lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1,event.getScreenX(), event.getScreenY()));
+        lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1, event.getScreenX(), event.getScreenY()));
     }
 
     private void createContextMenuBlackList(Label lb1) {
@@ -196,7 +200,7 @@ public class Controller implements Initializable {
         MenuItem menuItem = new MenuItem("Убрать из черного списка");
         menuItem.setOnAction(event -> model.deleteItemForBlackList(lb1.getText()));
         contextMenu.getItems().add(menuItem);
-        lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1,event.getScreenX(), event.getScreenY()));
+        lb1.setOnContextMenuRequested(event -> contextMenu.show(lb1, event.getScreenX(), event.getScreenY()));
     }
 
     @Override
@@ -220,6 +224,13 @@ public class Controller implements Initializable {
                 };
             }
         });
+    }
+
+    public void addNewUser() {
+        model.newUser(regLogin.getText(), regPass.getText(), regNick.getText());
+        regLogin.clear();
+        regNick.clear();
+        regPass.clear();
     }
 }
 

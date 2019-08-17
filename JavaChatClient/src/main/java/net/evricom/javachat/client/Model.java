@@ -119,11 +119,14 @@ public class Model extends Application {
         if (socket == null || socket.isClosed()) {
             connect();
         }
-        try {
-            out.writeUTF("/auth " + login + " " + pass);
-        } catch (IOException e) {
-            e.printStackTrace();
+        send("/auth " + login + " " + pass.hashCode());
+    }
+
+    public void newUser(String regLogin, String regPass, String regNick) {
+        if (socket == null || socket.isClosed()) {
+            connect();
         }
+        send("/newUser " + regLogin + " " + regPass.hashCode() + " " + regNick);
     }
 
     void send(String msg) {
@@ -141,6 +144,8 @@ public class Model extends Application {
     public void deleteItemForBlackList(String strItem) {
         send("/blacklist DEL " + strItem);
     }
+
+
 
     void newPrivateChat(String receiver) {
         if (StringUtils.isEmpty(receiver)) return;
@@ -188,6 +193,7 @@ public class Model extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
 
 }
 

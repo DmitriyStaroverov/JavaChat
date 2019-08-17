@@ -68,7 +68,7 @@ public class ClientHandler implements Runnable {
                         sendMsg("Пустые логин/пароль");
                         continue;
                     }
-                    String newNick = AuthService.getNickByLoginAndPass(tokens[1], tokens[2]);
+                    String newNick = AuthService.getNickByLoginAndPass(tokens[1], getHashPass(tokens[2],tokens[1]));
                     if (newNick != null) {
                         if (serverMain.getClientHandler(newNick) == null) {
                             sendMsg("/authok " + newNick);
@@ -89,7 +89,28 @@ public class ClientHandler implements Runnable {
                     log.debug("Завершение соединения, время которого " + (t1) + " мсек.");
                     break;
                 }
-
+                if (str.startsWith("/newUser")) {
+                    String[] tokens = str.split(" ");
+                    if (tokens.length < 4) {
+                        sendMsg("Пустые поля при регистрации нового пользователя!");
+                        log.debug("Пустые поля при регистрации нового пользователя!");
+                        continue;
+                    }
+                    int hashPass = getHashPass(tokens[2],tokens[3]);
+                    if (hashPass == 0) continue;
+                    if (AuthService.regNewUser(tokens[1],hashPass,tokens[3])){
+                        sendMsg("Успешная регистрация нового пользователя с ником " + tokens[3]);
+                        log.debug("Успешная регистрация нового пользователя с ником" + tokens[3]);
+                        sendMsg("/authok " + tokens[3]);
+                        this.nick = tokens[3];
+                        serverMain.subscribe(this);
+                        updateBlackList();
+                        sendHistory();
+                        break;
+                    } else {
+                        sendMsg("Ошибка при регистрации нового пользователя с ником " + tokens[3] + " !!!");
+                    }
+                }
             }
             while (getNick() != null) {
                 String str = in.readUTF();
@@ -177,6 +198,20 @@ public class ClientHandler implements Runnable {
         }
         sb.append(strMsg);
         return sb.toString();
+    }
+
+    private int getHashPass(String strHash, String nick){
+        int hashPass = 0;
+        try {
+            hashPass = Integer.parseInt(strHash);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        if (hashPass == 0){
+            sendMsg("Ошибка получения хеша из пароля пользователя с ником " + nick);
+            log.debug("Ошибка получения хеша из пароля пользователя с ником " + nick);
+        }
+        return hashPass;
     }
 
 

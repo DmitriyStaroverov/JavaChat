@@ -41,6 +41,12 @@
         <PasswordField fx:id="passwordField" onAction="#authBtn" promptText="пароль" />
         <Button onAction="#authBtn" text="Авторизоваться" />
     </HBox>
+    <HBox fx:id="registerPanel">
+        <TextField fx:id="regLogin" promptText="Введите логин"/>
+        <TextField fx:id="regPass" promptText="Введите пароль"/>
+        <TextField fx:id="regNick" promptText="Введите ник"/>
+        <Button onAction="#addNewUser" text="Зарегистрироваться"/>
+    </HBox>
     <HBox VBox.vgrow="ALWAYS">
         <VBox HBox.hgrow="ALWAYS" >
             <TextArea fx:id="textArea" editable="false" focusTraversable="false" wrapText="true" VBox.vgrow="ALWAYS" />

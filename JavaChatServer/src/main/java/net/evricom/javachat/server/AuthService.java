@@ -86,13 +86,13 @@ public class AuthService {
     }
 
 
-    public static String getNickByLoginAndPass(String login, String pass) {
+    public static String getNickByLoginAndPass(String login, int hashPass) {
         // для безопасности (возможности использовать в поле логин-пароль SQL-иньекции )используем preparedStatement
         String sql = "SELECT nickname FROM main WHERE login=? AND password=?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, login);
-            preparedStatement.setString(2, pass);
+            preparedStatement.setInt(2, hashPass);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return resultSet.getString(1);
@@ -161,5 +161,20 @@ public class AuthService {
     }
 
 
+    public static boolean regNewUser(String regLogin, int regPassHash, String regNick) {
+        int rez = 0;
+        // для безопасности (возможности использовать в поле логин-пароль SQL-иньекции )используем preparedStatement
+        String sql = "INSERT INTO main (login, password, nickname) VALUES (?, ?, ?)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, regLogin);
+            preparedStatement.setInt(2, regPassHash);
+            preparedStatement.setString(3, regNick);
+            rez = preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return (rez == 1);
+    }
 }
 
