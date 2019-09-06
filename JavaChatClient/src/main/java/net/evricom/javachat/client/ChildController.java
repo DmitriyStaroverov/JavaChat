@@ -40,7 +40,6 @@ public class ChildController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println(location);
-
+        //System.out.println(location);
     }
 }

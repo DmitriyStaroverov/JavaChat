@@ -8,6 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerMain {
 
@@ -19,6 +21,7 @@ public class ServerMain {
         clientHandlers = new Vector<> ();
         ServerSocket server = null;
         Socket socket = null;
+        ExecutorService service = Executors.newCachedThreadPool();
         try {
             AuthService.connect ();
             server = new ServerSocket ( 8189 );
@@ -26,9 +29,7 @@ public class ServerMain {
             while (true) {
                 socket = server.accept ();
                 ClientHandler clientHandler = new ClientHandler ( this, socket );
-                Thread threadClient = new Thread ( clientHandler );
-                threadClient.setDaemon ( true );
-                threadClient.start ();
+                service.execute(clientHandler);
            }
         } catch (IOException e) {
             e.printStackTrace ();
@@ -44,6 +45,7 @@ public class ServerMain {
                 e.printStackTrace ();
             }
             AuthService.disconnect ();
+            service.shutdown();
         }
     }
 
