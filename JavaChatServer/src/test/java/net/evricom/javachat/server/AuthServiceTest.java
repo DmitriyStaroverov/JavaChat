@@ -1,23 +1,24 @@
 package net.evricom.javachat.server;
 
-import org.dbunit.Assertion;
 import org.dbunit.DBTestCase;
 import org.dbunit.PropertiesBasedJdbcDatabaseTester;
 import org.dbunit.database.DatabaseConfig;
+import org.dbunit.dataset.DataSetException;
 import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -26,94 +27,106 @@ import java.util.Properties;
 
 public class AuthServiceTest extends DBTestCase {
 
-    private final static String nameTestDB = "testDB.db";
-    private final static String pathDataModel = Paths.get(
-            "src", "test", "resources", "create-data-model.sql").toFile().getAbsolutePath();
-    private final static String pathDataXML = Paths.get(
-            "src", "test", "resources", "dataForTestDB.xml").toFile().getAbsolutePath();
-    private final static String pathDataDTD = Paths.get(
-            "src", "test", "resources", "dataForTestDB.dtd").toFile().getAbsolutePath();
-
-    private static Logger logger = LoggerFactory.getLogger(AuthServiceTest.class);
+    private static ClassLoader classLoader;
+    private static Logger logger;
+    private static Properties propertiesTestDB;
 
     static {
-        // read test properties DB
-        InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("db.properties");
-        Properties props = new Properties();
+        //
+        logger = LoggerFactory.getLogger(AuthServiceTest.class);
+        classLoader = AuthServiceTest.class.getClassLoader();
+        //
+        // read test properties
+        propertiesTestDB = new Properties();
         try {
-            props.load(inputStream);
+            propertiesTestDB.load(classLoader.getResourceAsStream("db.properties"));
         } catch (IOException e) {
-            logger.error("Не найдено db.properties",e);
+            logger.error("Не найдено db.properties", e);
             fail(e.getLocalizedMessage());
         }
-        String driverDB = props.getProperty("db.driver");
-        String addressDB = props.getProperty("db.address");
-        logger.debug(driverDB);
-        logger.debug(addressDB);
-
-        // create database for this Test
-        String sql = "";
+        // получим DDL для создания БД
+        String sql = null;
         try {
-            Connection connectionTestDB = DriverManager.getConnection("jdbc:sqlite:" + nameTestDB);
-            sql = new String(Files.readAllBytes(Paths.get(pathDataModel)));
-            Statement statement = connectionTestDB.createStatement();
-            statement.executeUpdate(sql);
-            statement.close();
-            connectionTestDB.close();
-        } catch (SQLException e) {
-            logger.error("SQLException",e);
+            Path path = Paths.get(classLoader.getResource("create-data-model.sql").toURI());
+            sql = new String(Files.readAllBytes(path));
+        } catch (URISyntaxException | IOException e) {
+            logger.error("Ошибка инициализации - create-data-model.sql", e);
             fail(e.getLocalizedMessage());
-        } catch (IOException e) {
-            logger.error("IOException",e);
+        }
+        //создаем БД
+        try (Connection connectionTestDB = DriverManager.getConnection(propertiesTestDB.getProperty("db.address"))) {
+             connectionTestDB.createStatement().executeUpdate(sql);
+        } catch (SQLException e) {
+            logger.error("Ошибка при создании БД!", e);
             fail(e.getLocalizedMessage());
         }
     }
 
+/*
+    private static String readInputStreamToString(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = inputStream.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result.toString(StandardCharsets.UTF_8.name());
+    }
+*/
+
+    /**
+     * конструктор класса вызывается каждлый раз перед вызвом каждого теста
+     *
+     * @param name имя теста
+     */
     public AuthServiceTest(String name) {
         super(name);
-        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_DRIVER_CLASS, "org.sqlite.JDBC");
-        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_CONNECTION_URL, "jdbc:sqlite:" + nameTestDB);
-//        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_USERNAME, "sa");
-//        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_PASSWORD, "");
-//        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_SCHEMA, "");
-        logger.debug("AuthServiceTest NEW!!! name: " + name);
+        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_DRIVER_CLASS, propertiesTestDB.getProperty("db.driver"));
+        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_CONNECTION_URL, propertiesTestDB.getProperty("db.address"));
     }
 
+    /**
+     * после каждого теста DBUnit удаляет все данные из базы
+     * и заполняет базу заново тестовым набором значений
+     *
+     * @return набор тестовых данных, который будет наполняться база перед каждым тестом
+     * @throws Exception ошибка
+     */
     @Override
-    protected IDataSet getDataSet() throws Exception {
-        logger.debug("getDataSet()");
-
+    protected IDataSet getDataSet() throws IOException, DataSetException {
         FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
-        builder.setMetaDataSetFromDtd(new FileInputStream(pathDataDTD));
-        builder.setColumnSensing(false);
-        return builder.build(new FileInputStream(pathDataXML));
+        builder.setMetaDataSetFromDtd(classLoader.getResourceAsStream("dataForTestDB.dtd"));
+        return builder.build(classLoader.getResourceAsStream("dataForTestDB.xml"));
     }
 
+    /**
+     * изменгение конфигурации DBUNIT
+     * @param config конфигурация DBUNIT
+     */
     @Override
     protected void setUpDatabaseConfig(DatabaseConfig config) {
 //        logger.debug("setUpDatabaseConfig");
-        //config.setProperty(DatabaseConfig.FEATURE_DATATYPE_WARNING,false);
+//        config.setProperty(DatabaseConfig.FEATURE_DATATYPE_WARNING,false);
+//        config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new HsqldbDataTypeFactory());
     }
 
     @Test
     public void test1_GetNickByLoginAndPass() throws Exception {
         AuthService.connect();
-        Assert.assertNotNull(AuthService.getNickByLoginAndPass("login1",106438208));
+        Assert.assertNotNull(AuthService.getNickByLoginAndPass("login1", 106438208));
         AuthService.disconnect();
     }
 
     @Test
     public void test2_GetNickByLoginAndPass() throws Exception {
         AuthService.connect();
-        Assert.assertNotNull(AuthService.getNickByLoginAndPass("vasya2",106445665));
+        Assert.assertNotNull(AuthService.getNickByLoginAndPass("vasya2", 106445665));
         AuthService.disconnect();
-   }
-
+    }
 
     @Test
     public void testSave3() throws Exception {
         Assert.assertTrue(true);
     }
-
 
 }

@@ -19,8 +19,7 @@ public class AuthService {
     private static PreparedStatement prepstatGetHistory;
 
 
-    public static void connect() throws
-            SQLException {
+    public static void connect() throws SQLException {
 
         InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("db.properties");
         Properties props = new Properties();
