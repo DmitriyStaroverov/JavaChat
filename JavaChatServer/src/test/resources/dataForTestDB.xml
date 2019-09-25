@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <main id="1" login="login1" password="106438208" nickname="nick1"/>
+  <main id="2" login="vasya2" password="106445665" nickname="Вася"/>
+  <main id="3" login="login3" password="106438210" nickname="Петя"/>
+  <main id="4" login="login4" password="106438211" nickname="Михаил"/>
+  <blacklist id="27" id_nick_owner="3" id_nick_blocked="1"/>
+  <blacklist id="28" id_nick_owner="2" id_nick_blocked="3"/>
+  <blacklist id="29" id_nick_owner="1" id_nick_blocked="2"/>
+  <history id="13" date_msg="1566047636113" sender_id="1" msg="ghbdtn dctv"/>
+  <history id="14" date_msg="1566047638458" sender_id="1" msg="gfhsdfg"/>
+  <history id="15" date_msg="1566047639569" sender_id="1" msg="sdfgsdf"/>
+  <history id="16" date_msg="1566047640841" sender_id="1" msg="dsfsvsdfgs"/>
+  <history id="17" date_msg="1566047736710" sender_id="2" msg="выпаваы"/>
+  <history id="18" date_msg="1566047738209" sender_id="2" msg="ывап"/>
+  <history id="19" date_msg="1566047759400" sender_id="2" receiver_id="3" msg="фавм"/>
+  <history id="20" date_msg="1566047764440" sender_id="2" receiver_id="3" msg="ЯЧСывфс"/>
+  <history id="21" date_msg="1566047795812" sender_id="3" msg="ВЧСЯ"/>
+  <history id="22" date_msg="1566048165822" sender_id="4" msg="мсчтст"/>
+  <history id="23" date_msg="1567756791528" sender_id="2" receiver_id="1" msg="dfg"/>
+  <history id="24" date_msg="1567756843279" sender_id="2" msg="dfga adgfrsthsth thg srwtghwrtg"/>
+  <history id="25" date_msg="1567756856328" sender_id="1" msg="dfgasdsbvf"/>
+</dataset>

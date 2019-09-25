@@ -92,15 +92,17 @@ public class ClientHandler implements Runnable {
                 if (str.startsWith("/newUser")) {
                     String[] tokens = str.split(" ");
                     if (tokens.length < 4) {
-                        sendMsg("Пустые поля при регистрации нового пользователя!");
-                        log.debug("Пустые поля при регистрации нового пользователя!");
+                        String strMsg = "Пустые поля при регистрации нового пользователя!";
+                        sendMsg(strMsg);
+                        log.debug(strMsg);
                         continue;
                     }
                     int hashPass = getHashPass(tokens[2],tokens[3]);
                     if (hashPass == 0) continue;
                     if (AuthService.regNewUser(tokens[1],hashPass,tokens[3])){
-                        sendMsg("Успешная регистрация нового пользователя с ником " + tokens[3]);
-                        log.debug("Успешная регистрация нового пользователя с ником" + tokens[3]);
+                        String strMsg = "Успешная регистрация нового пользователя с ником " + tokens[3];
+                        sendMsg(strMsg);
+                        log.debug(strMsg);
                         sendMsg("/authok " + tokens[3]);
                         this.nick = tokens[3];
                         serverMain.subscribe(this);
@@ -208,8 +210,9 @@ public class ClientHandler implements Runnable {
             e.printStackTrace();
         }
         if (hashPass == 0){
-            sendMsg("Ошибка получения хеша из пароля пользователя с ником " + nick);
-            log.debug("Ошибка получения хеша из пароля пользователя с ником " + nick);
+            String msg = "Ошибка получения хеша из пароля пользователя с ником " + nick;
+            sendMsg(msg);
+            log.debug(msg);
         }
         return hashPass;
     }

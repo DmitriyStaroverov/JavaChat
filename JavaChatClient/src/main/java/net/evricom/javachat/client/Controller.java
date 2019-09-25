@@ -205,7 +205,6 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         observableListClients = FXCollections.observableArrayList();
         clientList.setItems(observableListClients);
         clientList.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {

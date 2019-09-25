@@ -1,0 +1,29 @@
+<!ELEMENT dataset (
+    main*,
+    blacklist*,
+    history*)>
+
+<!ELEMENT main EMPTY>
+<!ATTLIST main
+    id CDATA #IMPLIED
+    login CDATA #IMPLIED
+    password CDATA #REQUIRED
+    nickname CDATA #IMPLIED
+>
+
+<!ELEMENT blacklist EMPTY>
+<!ATTLIST blacklist
+    id CDATA #IMPLIED
+    id_nick_owner CDATA #REQUIRED
+    id_nick_blocked CDATA #REQUIRED
+>
+
+<!ELEMENT history EMPTY>
+<!ATTLIST history
+    id CDATA #IMPLIED
+    date_msg CDATA #IMPLIED
+    sender_id CDATA #REQUIRED
+    receiver_id CDATA #IMPLIED
+    msg CDATA #IMPLIED
+>
+

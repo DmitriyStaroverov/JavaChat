@@ -3,8 +3,11 @@ package net.evricom.javachat.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Properties;
 
 public class AuthService {
 
@@ -16,10 +19,31 @@ public class AuthService {
     private static PreparedStatement prepstatGetHistory;
 
 
-    public static void connect() throws SQLException {
-        DriverManager.registerDriver(new org.sqlite.JDBC());
-        //Class.forName ( "org.sqlite.JDBC" );
-        connection = DriverManager.getConnection("jdbc:sqlite:userDB.db");
+    public static void connect() throws
+            SQLException {
+
+        InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("db.properties");
+        Properties props = new Properties();
+        try {
+            props.load(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String driverDB = props.getProperty("db.driver");
+        String addressDB = props.getProperty("db.address");
+        //
+        try {
+            DriverManager.registerDriver((Driver) Class.forName(driverDB).newInstance());
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        //DriverManager.registerDriver(new org.sqlite.JDBC());
+        //Class.forName( "org.sqlite.JDBC" );
+        connection = DriverManager.getConnection(addressDB);
         statement = connection.createStatement();
         // ADD history
         String sqlAddHistory = "INSERT INTO history(date_msg,sender_id,receiver_id,msg) VALUES(" +
@@ -59,7 +83,7 @@ public class AuthService {
                 String strNick = resultSet.getString("sender");
                 statusPrivat = resultSet.getInt("receiver_id") != 0;
                 // если в черном списке и неприватно, пропускаем сообщение
-                if (blacklist.contains(strNick) & !statusPrivat ) continue;
+                if (blacklist.contains(strNick) & !statusPrivat) continue;
                 dateMsg = resultSet.getDate("date_msg");
                 String strMsg = resultSet.getString("msg");
                 sb.append(ClientHandler.formatMsgStr(dateMsg, strNick, strMsg, statusPrivat));
