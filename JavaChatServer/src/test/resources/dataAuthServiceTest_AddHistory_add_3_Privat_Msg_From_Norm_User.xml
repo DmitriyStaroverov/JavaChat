@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <main id="1" login="login1" password="106438208" nickname="nick1"/>
+    <main id="2" login="vasya2" password="106445665" nickname="Вася"/>
+    <main id="3" login="login3" password="106438210" nickname="Петя"/>
+    <blacklist id="27" id_nick_owner="3" id_nick_blocked="1"/>
+    <blacklist id="28" id_nick_owner="2" id_nick_blocked="3"/>
+    <blacklist id="29" id_nick_owner="1" id_nick_blocked="2"/>
+    <history id="13" date_msg="1566047636113" sender_id="1" msg="Cообщение всем от nick1"/>
+    <history id="14" date_msg="1566047638458" sender_id="2" msg="Cообщение всем от Вася"/>
+    <history id="15" date_msg="1566047639569" sender_id="3" msg="Cообщение всем от Петя"/>
+    <history id="19" date_msg="1566047759400" sender_id="2" receiver_id="3" msg="Сообщение от Вася только для Петя"/>
+    <history id="20" date_msg="1566047764440" sender_id="2" receiver_id="1" msg="Сообщение от Вася только для nick1"/>
+    <history id="22" date_msg="1566048165822" sender_id="1" receiver_id="3" msg="Сообщение от nick1 только для Петя"/>
+    <!--добавляем 3 приватные записи в history-->
+    <history date_msg="1566047759401" sender_id="3" receiver_id="2" msg="Сообщение add_3_Msg от Петя только для Вася"/>
+    <history date_msg="1566047759402" sender_id="2" receiver_id="3" msg="Сообщение add_3_Msg от Вася только для Петя"/>
+    <history date_msg="1566047759403" sender_id="1" receiver_id="2" msg="Сообщение add_3_Msg от nick1 только для Вася"/>
+</dataset>

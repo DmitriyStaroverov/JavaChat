@@ -51,7 +51,7 @@ public class DatabaseExport {
         FlatXmlDataSet.write(depDataset, new FileOutputStream("JavaChatServer/src/test/resources/dataForTestDB_new.xml"));
 
         // write DTD file
-        FlatDtdDataSet.write(depDataset, new FileOutputStream("JavaChatServer/src/test/resources/dataForTestDB.dtd"));
+        FlatDtdDataSet.write(depDataset, new FileOutputStream("JavaChatServer/src/test/resources/dtdForAuthServiceTest.dtd"));
         iDatabaseConnection.close();
         jdbcConnection.close();
     }

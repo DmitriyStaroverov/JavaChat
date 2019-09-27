@@ -13,36 +13,30 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    private static Connection connection;
+    static Connection connection;
     private static Statement statement;
     private static PreparedStatement prepStatAddHistory;
     private static PreparedStatement prepstatGetHistory;
+
+    private static Properties props;
 
 
     public static void connect() throws SQLException {
 
         InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("db.properties");
-        Properties props = new Properties();
+        props = new Properties();
         try {
             props.load(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String driverDB = props.getProperty("db.driver");
-        String addressDB = props.getProperty("db.address");
         //
         try {
-            DriverManager.registerDriver((Driver) Class.forName(driverDB).newInstance());
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+            DriverManager.registerDriver((Driver) Class.forName(props.getProperty("db.driver")).newInstance());
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        //DriverManager.registerDriver(new org.sqlite.JDBC());
-        //Class.forName( "org.sqlite.JDBC" );
-        connection = DriverManager.getConnection(addressDB);
+        connection = DriverManager.getConnection(props.getProperty("db.address"));
         statement = connection.createStatement();
         // ADD history
         String sqlAddHistory = "INSERT INTO history(date_msg,sender_id,receiver_id,msg) VALUES(" +
